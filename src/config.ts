@@ -6,7 +6,7 @@ export const siteConfig = {
   author: "Introl",
   description: "一个OIer的OI弱相关博客",
   url: "https://blog.introl.top", // 站点地址，请修改为你的实际域名
-  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=introl", // 站点头像，可选
+  avatar: "/avatar.jpg", // 站点头像，可选
 
   // 导航链接
   nav: [
