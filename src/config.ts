@@ -51,6 +51,12 @@ export const siteConfig = {
       avatar: "https://www.lansganbs.cn/images/friends/lansganbs.png",
       description: "红叶最多情，一舞寄相思。"
     },
+    {
+      name: "Qiwi说说",
+      url: "https://maxqi.top/",
+      avatar: "https://p.maxqi.top/img/2025/10/01/68dce7326320a.png",
+      description: "一名高中生的技术与成长记录"
+    },
   ],
 
   // 主题配置
