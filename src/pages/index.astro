@@ -157,7 +157,7 @@ const iconMap = {
       if (!container) return;
 
       try {
-        const response = await fetch('/api/hitokoto');
+        const response = await fetch('https://hitokoto.introl.top/');
         if (!response.ok) {
           throw new Error(`Request failed: ${response.status}`);
         }
