@@ -1,0 +1,313 @@
+---
+import { siteConfig } from '../config';
+import Footer from '../components/Footer.astro';
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+
+// 从 config 获取站点信息
+const siteUrl = siteConfig.url || (Astro.site ? Astro.site.toString().replace(/\/$/, '') : Astro.url.origin);
+const siteDescription = siteConfig.description || '简洁的个人写作与技术笔记';
+const siteAvatar = siteConfig.avatar;
+
+// 获取联系方式
+const emailContact = siteConfig.social?.find((item) => item.name === 'Email');
+const emailLabel = emailContact?.label ?? 'hello@example.com';
+const emailHref = emailContact?.href ?? `mailto:${emailLabel}`;
+
+// RSS 地址
+const rssUrl = `${siteUrl}/rss.xml`;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="友链 - 很高兴与你相遇。这里展示朋友们的站点，也欢迎交换友链。">
+  <title>友链 - {siteConfig.title}</title>
+  <script is:inline>
+    // 立即执行，避免闪烁
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" aria-pressed="false" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <div class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+
+    <section class="mb-16 space-y-4">
+      <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight">友链</h1>
+      <p class="text-base md:text-lg text-ink/70 dark:text-moon/70 max-w-2xl">
+        很高兴与你相遇。这里展示朋友们的站点，也欢迎交换友链。
+      </p>
+    </section>
+
+    <main class="space-y-16">
+      <!-- 朋友们 -->
+      <section class="space-y-6">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">Friends</p>
+            <h2 class="mt-2 text-2xl font-serif font-semibold text-ink dark:text-moon">朋友们</h2>
+          </div>
+          <p class="text-sm text-ink/60 dark:text-moon/60">{siteConfig.friends.length} 位朋友正在这里</p>
+        </div>
+
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {siteConfig.friends.map(friend => (
+            <a href={friend.url} target="_blank" rel="noopener noreferrer" class="group rounded-2xl border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night/90 p-5 transition hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_16px_40px_rgba(15,13,10,0.12)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.45)]">
+              <div class="flex items-start gap-4">
+                <img src={friend.avatar} alt={friend.name} loading="lazy" decoding="async" class="w-12 h-12 rounded-full object-cover shrink-0 bg-ink/5 dark:bg-moon/10 border border-ink/10 dark:border-moon/10" />
+                <div class="min-w-0">
+                  <h3 class="text-lg font-serif font-semibold text-ink dark:text-moon">{friend.name}</h3>
+                  <p class="mt-1 text-sm text-ink/70 dark:text-moon/70 leading-relaxed line-clamp-2">{friend.description}</p>
+                  <p class="mt-3 text-xs text-ink/50 dark:text-moon/50 break-all">{friend.url}</p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- 申请友链 & 本站信息 -->
+      <section class="space-y-8">
+        <!-- 本站信息 -->
+        <article class="rounded-2xl border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night/90 shadow-[0_16px_40px_rgba(12,10,8,0.08)]">
+          <div class="p-6 border-b border-ink/10 dark:border-moon/10">
+            <p class="text-xs uppercase tracking-[0.25em] text-ink/50 dark:text-moon/50">Site Info</p>
+            <h2 class="mt-2 text-2xl font-serif font-semibold text-ink dark:text-moon">本站信息</h2>
+          </div>
+          <div class="p-6">
+            <div class="divide-y divide-ink/10 dark:divide-moon/10">
+              <div class="flex items-start justify-between gap-4 py-4">
+                <div class="space-y-1.5">
+                  <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">站点名称</p>
+                  <p class="font-serif text-xl text-ink dark:text-moon">{siteConfig.title}</p>
+                </div>
+                <button type="button" data-copy={siteConfig.title} data-field="站点名称" aria-label="复制站点名称" class="shrink-0 rounded-full border border-ink/15 dark:border-moon/20 px-4 py-1 text-xs uppercase tracking-[0.2em] text-ink/70 dark:text-moon/70 hover:text-accent hover:border-accent/50 disabled:opacity-60 disabled:cursor-not-allowed transition">
+                  复制
+                </button>
+              </div>
+              <div class="flex items-start justify-between gap-4 py-4">
+                <div class="space-y-1.5">
+                  <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">站点地址</p>
+                  <p class="text-base text-ink dark:text-moon break-all">{siteUrl}</p>
+                </div>
+                <button type="button" data-copy={siteUrl} data-field="站点地址" aria-label="复制站点地址" class="shrink-0 rounded-full border border-ink/15 dark:border-moon/20 px-4 py-1 text-xs uppercase tracking-[0.2em] text-ink/70 dark:text-moon/70 hover:text-accent hover:border-accent/50 disabled:opacity-60 disabled:cursor-not-allowed transition">
+                  复制
+                </button>
+              </div>
+              {siteAvatar && (
+                <div class="flex items-start justify-between gap-4 py-4">
+                  <div class="space-y-1.5">
+                    <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">站点头像</p>
+                    <p class="text-base text-ink dark:text-moon break-all">{siteAvatar}</p>
+                  </div>
+                  <button type="button" data-copy={siteAvatar} data-field="站点头像" aria-label="复制站点头像" class="shrink-0 rounded-full border border-ink/15 dark:border-moon/20 px-4 py-1 text-xs uppercase tracking-[0.2em] text-ink/70 dark:text-moon/70 hover:text-accent hover:border-accent/50 disabled:opacity-60 disabled:cursor-not-allowed transition">
+                    复制
+                  </button>
+                </div>
+              )}
+              <div class="flex items-start justify-between gap-4 py-4">
+                <div class="space-y-1.5">
+                  <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">站点描述</p>
+                  <p class="text-base text-ink dark:text-moon leading-relaxed">{siteDescription}</p>
+                </div>
+                <button type="button" data-copy={siteDescription} data-field="站点描述" aria-label="复制站点描述" class="shrink-0 rounded-full border border-ink/15 dark:border-moon/20 px-4 py-1 text-xs uppercase tracking-[0.2em] text-ink/70 dark:text-moon/70 hover:text-accent hover:border-accent/50 disabled:opacity-60 disabled:cursor-not-allowed transition">
+                  复制
+                </button>
+              </div>
+            </div>
+            <!-- 复制状态提示 -->
+            <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" id="copy-status"></div>
+          </div>
+        </article>
+
+        <!-- 申请友链 -->
+        <article class="rounded-2xl border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night/90 shadow-[0_16px_40px_rgba(12,10,8,0.08)]">
+          <div class="p-6 border-b border-ink/10 dark:border-moon/10">
+            <p class="text-xs uppercase tracking-[0.25em] text-ink/50 dark:text-moon/50">Friend Link</p>
+            <h2 class="mt-2 text-2xl font-serif font-semibold text-ink dark:text-moon">申请友链</h2>
+            <p class="mt-3 text-sm text-ink/70 dark:text-moon/70 leading-relaxed">
+              希望与你分享有趣的内容与创作笔记。
+            </p>
+          </div>
+          <div class="p-6 space-y-5 text-sm text-ink/80 dark:text-moon/80 leading-relaxed">
+            <div>
+              <p class="font-semibold text-ink dark:text-moon mb-2">申请条件</p>
+              <ul class="list-disc list-inside space-y-2">
+                <li>站点保持长期维护和更新</li>
+                <li>非以商业化为主，广告、推广内容不过多干扰阅读</li>
+                <li>在站点中展示本站友链</li>
+              </ul>
+            </div>
+            <div class="rounded-xl border border-ink/10 dark:border-moon/10 bg-ink/[0.03] dark:bg-moon/[0.06] p-4">
+              <p class="text-xs uppercase tracking-[0.25em] text-ink/60 dark:text-moon/60">提交方式</p>
+              <p class="mt-2">
+                请将站点信息发送至
+                <a href={emailHref} class="text-accent hover:underline underline-offset-4">{emailLabel}</a>
+                ，或在此评论区留言。
+              </p>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <Footer showHomeLink={true} />
+
+  </div>
+
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // 初始化主题
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      // 添加点击事件
+      if (toggle) {
+        // 设置初始状态
+        const isDarkInitial = theme === 'dark';
+        toggle.setAttribute('aria-pressed', isDarkInitial ? 'true' : 'false');
+        toggle.setAttribute('aria-label', isDarkInitial ? '切换到浅色模式' : '切换到深色模式');
+
+        toggle.addEventListener('click', () => {
+          const isDark = html.classList.toggle('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+          toggle.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
+        });
+      }
+
+      // 复制功能
+      const copyButtons = document.querySelectorAll('[data-copy]');
+      const statusElement = document.getElementById('copy-status');
+      let statusTimeout = null;
+
+      copyButtons.forEach((button) => {
+        const defaultLabel = '复制';
+        let isProcessing = false;
+
+        button.addEventListener('click', async () => {
+          if (isProcessing) return;
+
+          const text = button.getAttribute('data-copy');
+          const fieldLabel = button.getAttribute('data-field') || '';
+          if (!text) return;
+
+          isProcessing = true;
+          button.disabled = true;
+
+          try {
+            let success = false;
+
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(text);
+              success = true;
+            } else {
+              // 保存当前焦点
+              const activeElement = document.activeElement;
+              const textarea = document.createElement('textarea');
+              textarea.value = text;
+              textarea.setAttribute('readonly', 'true');
+              textarea.style.position = 'absolute';
+              textarea.style.left = '-9999px';
+              document.body.appendChild(textarea);
+              textarea.select();
+              success = document.execCommand('copy');
+              document.body.removeChild(textarea);
+              // 恢复焦点
+              if (activeElement && activeElement instanceof HTMLElement) {
+                activeElement.focus();
+              }
+            }
+
+            if (success) {
+              button.textContent = '已复制';
+              button.classList.add('text-accent', 'border-accent/50');
+              if (statusElement) {
+                if (statusTimeout) clearTimeout(statusTimeout);
+                statusElement.textContent = `已复制${fieldLabel}`;
+              }
+
+              setTimeout(() => {
+                button.textContent = defaultLabel;
+                button.classList.remove('text-accent', 'border-accent/50');
+                button.disabled = false;
+                isProcessing = false;
+              }, 1200);
+
+              // 延长状态提示时间以确保屏幕阅读器能读取
+              if (statusElement) {
+                statusTimeout = setTimeout(() => {
+                  statusElement.textContent = '';
+                }, 2000);
+              }
+            } else {
+              throw new Error('Copy failed');
+            }
+          } catch (error) {
+            button.textContent = '复制失败';
+            if (statusElement) {
+              if (statusTimeout) clearTimeout(statusTimeout);
+              statusElement.textContent = `复制${fieldLabel}失败`;
+            }
+            setTimeout(() => {
+              button.textContent = defaultLabel;
+              button.disabled = false;
+              isProcessing = false;
+            }, 1200);
+
+            if (statusElement) {
+              statusTimeout = setTimeout(() => {
+                statusElement.textContent = '';
+              }, 2000);
+            }
+          }
+        });
+      });
+    });
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,77 @@
+---
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+import Footer from '../components/Footer.astro';
+import { siteConfig } from '../config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  showHomeLink?: boolean;
+}
+
+const { title = siteConfig.title, description = siteConfig.description, showHomeLink = false } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={description}>
+  <title>{title}</title>
+  <script is:inline>
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <div class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+    <slot />
+    <Footer showHomeLink={showHomeLink} />
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</body>
+</html>

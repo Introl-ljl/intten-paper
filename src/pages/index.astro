@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import { marked } from 'marked';
+import Twitter from 'lucide-astro/Twitter';
+import Github from 'lucide-astro/Github';
+import Rss from 'lucide-astro/Rss';
+import Mail from 'lucide-astro/Mail';
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+import WeChat from '../components/icons/WeChat.astro';
+import QQ from '../components/icons/QQ.astro';
+import Codeforces from '../components/icons/Codeforces.astro';
+import LinuxDo from '../components/icons/LinuxDo.astro';
+import Footer from '../components/Footer.astro';
+import Pagination from '../components/Pagination.astro';
+import { siteConfig, PAGE_SIZE } from '../config';
+
+const posts = (await getCollection('posts')).sort((a, b) =>
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+
+// Pagination Logic
+const totalPosts = posts.length;
+const totalPages = Math.ceil(totalPosts / PAGE_SIZE);
+const currentPosts = posts.slice(0, PAGE_SIZE);
+
+const iconMap = {
+  twitter: Twitter,
+  github: Github,
+  rss: Rss,
+  mail: Mail,
+  wechat: WeChat,
+  qq: QQ,
+  codeforces: Codeforces,
+  linuxdo: LinuxDo,
+};
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={siteConfig.description}>
+  <title>{siteConfig.title}</title>
+  <script is:inline>
+    // 立即执行，避免闪烁
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <div class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+
+    <section class="mb-6">
+      <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-2">{siteConfig.title}</h1>
+    </section>
+
+    <section class="mb-20 flex items-end justify-between gap-8">
+      <div class="flex-1">
+        <!-- 静态简介 - 使用衬线字体但更小 -->
+        <div
+          class="prose prose-base max-w-none prose-p:text-ink/80 dark:prose-p:text-moon/80 prose-p:font-serif prose-p:leading-relaxed prose-p:my-1 prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-a:transition-colors prose-strong:font-semibold prose-strong:text-ink dark:prose-strong:text-moon prose-em:text-ink dark:prose-em:text-moon mb-6"
+          set:html={marked.parse(siteConfig.description)}
+        />
+        <!-- 一言 - 衬线字体稍大 -->
+        <div
+          id="hitokoto-container"
+          class="prose prose-lg max-w-none prose-p:text-ink/90 dark:prose-p:text-moon/90 prose-p:font-serif prose-p:leading-normal prose-p:my-1 prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-a:transition-colors prose-strong:font-bold prose-strong:text-ink dark:prose-strong:text-moon prose-em:text-ink dark:prose-em:text-moon font-serif"
+        >
+          <p class="opacity-50 text-sm">加载中...</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-center">
+        {siteConfig.social.map(item => {
+          const Icon = iconMap[item.icon];
+          return Icon ? (
+            <a
+              href={item.href}
+              class="group relative opacity-50 hover:opacity-100 hover:text-accent transition-all"
+              title={item.name}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={item.name}
+            >
+              <Icon class="w-5 h-5" />
+              {item.label && (
+                <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 w-max max-w-[200px] rounded border border-ink/10 bg-paper px-2 py-1 text-xs text-ink shadow-sm opacity-0 transition-all group-hover:-top-10 group-hover:opacity-100 dark:border-moon/10 dark:bg-night dark:text-moon z-10">
+                  {item.label}
+                </span>
+              )}
+            </a>
+          ) : null;
+        })}
+      </div>
+    </section>
+
+    <main class="space-y-16">
+
+      {currentPosts.map((post, index) => (
+        <>
+          <article class="group cursor-pointer">
+            <a href={`/posts/${post.slug}`}>
+              <h2 class="text-xl font-serif font-semibold group-hover:text-accent transition-colors mb-1">
+                {post.data.title}
+              </h2>
+              <time class="text-xs uppercase tracking-widest opacity-50 block mb-3">{post.data.date}</time>
+              <p class="opacity-70 leading-relaxed mb-3">
+                {post.data.description}
+              </p>
+              <span class="text-sm border-b border-accent/30 group-hover:border-accent pb-0.5 transition-colors">阅读全文 →</span>
+            </a>
+          </article>
+
+          {index < currentPosts.length - 1 && <hr class="border-ink/10 dark:border-moon/10" />}
+        </>
+      ))}
+
+    </main>
+
+    <Pagination
+      current={1}
+      total={totalPages}
+      nextUrl={totalPages > 1 ? '/page/2' : undefined}
+    />
+
+    <Footer />
+
+  </div>
+
+  <script>
+    // 获取一言
+    async function fetchHitokoto() {
+      const container = document.getElementById('hitokoto-container');
+      if (!container) return;
+
+      try {
+        const response = await fetch('http://hitokoto.introl.top:1234/');
+        const data = await response.json();
+
+        // 构建显示内容
+        let html = `<p>${data.hitokoto}</p>`;
+        if (data.from) {
+          html += `<p class="text-sm opacity-60">—— ${data.from}`;
+          if (data.from_who) {
+            html += ` · ${data.from_who}`;
+          }
+          html += `</p>`;
+        }
+
+        container.innerHTML = html;
+      } catch (error) {
+        console.error('Failed to fetch hitokoto:', error);
+        container.innerHTML = '<p>一个OIer的OI弱相关博客。</p>';
+      }
+    }
+
+    // 页面加载时获取一言
+    fetchHitokoto();
+
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // 初始化主题
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      // 添加点击事件
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</body>
+</html>

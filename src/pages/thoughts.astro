@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const thoughts = (await getCollection('thoughts'))
+  .filter(thought => {
+    const date = new Date(thought.data.date);
+    return !isNaN(date.getTime());
+  })
+  .sort((a, b) => {
+    const dateA = new Date(a.data.date).getTime();
+    const dateB = new Date(b.data.date).getTime();
+    if (dateB !== dateA) return dateB - dateA;
+    return b.slug.localeCompare(a.slug);
+  });
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return dateStr;
+  }
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Asia/Shanghai'
+  });
+};
+
+const thoughtsWithContent = await Promise.all(
+  thoughts.map(async (thought) => ({
+    ...thought,
+    Content: (await thought.render()).Content
+  }))
+);
+---
+
+<BaseLayout title="随笔 - Introl's Blog" description="碎碎念" showHomeLink={true}>
+  <section class="mb-12">
+    <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4">随笔</h1>
+    <p class="text-sm opacity-50 font-serif">
+      {thoughts.length > 0 ? `共 ${thoughts.length} 条碎碎念` : '暂无内容'}
+    </p>
+  </section>
+
+  <div class="relative pl-8 md:pl-0">
+    {thoughts.length > 0 && (
+      <div class="hidden md:block absolute left-[160px] top-2 bottom-0 w-px bg-ink/10 dark:bg-moon/10"></div>
+    )}
+
+    <div class="space-y-12">
+      {thoughtsWithContent.map((thought, index) => {
+        const { Content } = thought;
+        return (
+          <article class="relative md:flex group">
+            <div class="md:w-[160px] flex-shrink-0 mb-2 md:mb-0 md:text-right md:pr-8">
+              <time
+                datetime={thought.data.date}
+                class="text-sm font-serif opacity-50 tabular-nums"
+              >
+                {formatDate(thought.data.date)}
+              </time>
+            </div>
+
+            <div class="absolute -left-[5px] md:left-[156px] top-[6px] w-[9px] h-[9px] rounded-full bg-paper border-2 border-accent dark:bg-night z-10 mt-1.5 md:mt-0"></div>
+
+            <div class={`md:hidden absolute left-[-1px] top-4 bottom-[-48px] w-px bg-ink/10 dark:bg-moon/10 ${index === thoughtsWithContent.length - 1 ? 'hidden' : ''}`}></div>
+
+            <div class="flex-1 md:pl-8">
+              <div class="prose prose-ink dark:prose-invert prose-headings:font-serif prose-p:font-serif max-w-none text-base leading-relaxed opacity-90 hover:opacity-100 transition-opacity">
+                <Content />
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    {thoughts.length === 0 && (
+      <div class="py-20 text-center opacity-50 font-serif">
+        <p>这里还什么都没有...</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  article :global(.prose p) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  article :global(.prose img) {
+    border-radius: 0.5rem;
+    max-height: 400px;
+    object-fit: contain;
+  }
+</style>

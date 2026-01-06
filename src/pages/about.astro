@@ -1,0 +1,102 @@
+---
+import { getEntry } from 'astro:content';
+import { siteConfig } from '../config';
+import Footer from '../components/Footer.astro';
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+
+const aboutEntry = await getEntry('pages', 'about');
+if (!aboutEntry) {
+  throw new Error('Could not find about page content at src/content/pages/about.md');
+}
+const { Content } = await aboutEntry.render();
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={`${aboutEntry.data.title} - ${siteConfig.title}`}>
+  <title>{aboutEntry.data.title} - {siteConfig.title}</title>
+  <script is:inline>
+    // 立即执行，避免闪烁
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <div class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+
+    <section class="mb-16">
+      <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4">{aboutEntry.data.title}</h1>
+    </section>
+
+    <main>
+      <div class="prose prose-lg max-w-none
+                  prose-h2:text-2xl prose-h2:font-serif prose-h2:font-semibold prose-h2:mb-6 prose-h2:text-accent
+                  prose-h3:text-xl prose-h3:font-serif prose-h3:font-semibold prose-h3:text-accent
+                  prose-p:text-ink dark:prose-p:text-moon prose-p:font-serif prose-p:leading-relaxed prose-p:my-3
+                  prose-a:text-accent prose-a:no-underline hover:prose-a:underline
+                  prose-ul:my-4 prose-li:my-2 prose-li:text-ink dark:prose-li:text-moon
+                  prose-strong:text-ink dark:prose-strong:text-moon
+                  prose-em:text-ink dark:prose-em:text-moon
+                  prose-code:text-ink dark:prose-code:text-moon
+                  prose-blockquote:text-ink dark:prose-blockquote:text-moon prose-blockquote:border-accent
+                  prose-hr:my-16 prose-hr:border-ink/10 dark:prose-hr:border-moon/10
+                  font-serif">
+        <Content />
+      </div>
+    </main>
+
+    <Footer showHomeLink={true} />
+
+  </div>
+
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // 初始化主题
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      // 添加点击事件
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</body>
+</html>

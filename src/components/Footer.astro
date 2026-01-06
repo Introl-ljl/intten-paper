@@ -1,0 +1,30 @@
+---
+import { siteConfig } from '../config';
+
+interface Props {
+  class?: string;
+  showHomeLink?: boolean;
+}
+
+const { class: className = "mt-24", showHomeLink = false } = Astro.props;
+---
+
+<footer class:list={[className, "pt-8 border-t border-ink/10 dark:border-moon/10 text-sm opacity-50"]}>
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="flex flex-col gap-2 items-center md:items-start">
+      <span>&copy; {siteConfig.copyright} {siteConfig.author}</span>
+      <span class="text-xs">
+        Powered by <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-colors">Astro</a> & <a href="https://github.com/Introl-ljl/intten" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-colors">Intten-paper</a>
+      </span>
+      <a href="https://icp.gov.moe/?keyword=20255561" target="_blank" rel="noopener noreferrer" class="text-xs hover:text-accent transition-colors">萌ICP备20255561号</a>
+    </div>
+
+    <div class="flex gap-4 items-center">
+      <a href="/rss.xml" class="hover:text-accent transition-colors">RSS</a>
+      <a href="/sitemap-index.xml" class="hover:text-accent transition-colors">Sitemap</a>
+      {showHomeLink && (
+        <a href="/" class="hover:text-accent transition-colors">返回首页</a>
+      )}
+    </div>
+  </div>
+</footer>

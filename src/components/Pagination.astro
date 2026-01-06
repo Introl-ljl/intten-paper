@@ -1,0 +1,38 @@
+---
+interface Props {
+  current: number;
+  total: number;
+  prevUrl?: string;
+  nextUrl?: string;
+}
+
+const { current, total, prevUrl, nextUrl } = Astro.props;
+---
+
+<nav class="flex justify-between items-center mt-12 text-sm font-serif border-t border-ink/10 dark:border-moon/10 pt-8">
+  <div class="flex-1 text-left">
+    {prevUrl ? (
+      <a href={prevUrl} class="group inline-flex items-center gap-2 opacity-70 hover:opacity-100 hover:text-accent transition-all">
+        <span>←</span>
+        <span class="border-b border-transparent group-hover:border-accent transition-colors">上一页</span>
+      </a>
+    ) : (
+      <span class="opacity-30 cursor-default select-none">← 上一页</span>
+    )}
+  </div>
+
+  <span class="opacity-50 font-mono text-xs">
+    {current} / {total}
+  </span>
+
+  <div class="flex-1 text-right">
+    {nextUrl ? (
+      <a href={nextUrl} class="group inline-flex items-center gap-2 opacity-70 hover:opacity-100 hover:text-accent transition-all">
+        <span class="border-b border-transparent group-hover:border-accent transition-colors">下一页</span>
+        <span>→</span>
+      </a>
+    ) : (
+      <span class="opacity-30 cursor-default select-none">下一页 →</span>
+    )}
+  </div>
+</nav>

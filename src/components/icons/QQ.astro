@@ -1,0 +1,28 @@
+---
+const { class: className } = Astro.props;
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+>
+  <!-- Scarf -->
+  <path d="M7 12h10"></path>
+  <!-- Body -->
+  <path d="M17 12a5 5 0 0 1-10 0"></path>
+  <path d="M7 12v3a5 5 0 0 0 10 0v-3"></path>
+  <!-- Head (Top) -->
+  <path d="M12 2a5 5 0 0 0-5 5v5h10V7a5 5 0 0 0-5-5z"></path>
+  <!-- Eyes -->
+  <path d="M10 7h.01"></path>
+  <path d="M14 7h.01"></path>
+  <!-- Beak -->
+  <path d="M12 9l-1 1h2l-1-1z"></path>
+</svg>

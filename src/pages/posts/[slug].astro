@@ -1,0 +1,222 @@
+---
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../../config';
+import Footer from '../../components/Footer.astro';
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={post.data.description || post.data.title}>
+  <title>{post.data.title} - {siteConfig.title}</title>
+  <script is:inline>
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <article class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+
+    <header class="mb-12">
+      <a href="/" class="text-sm opacity-50 hover:text-accent transition-colors mb-6 inline-block">← 返回</a>
+      <h1 class="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-4 leading-tight">{post.data.title}</h1>
+      <time class="text-sm uppercase tracking-widest opacity-50">{post.data.date}</time>
+    </header>
+
+    <div class="prose prose-lg max-w-none
+                prose-headings:font-serif prose-headings:font-bold prose-headings:tracking-tight
+                prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-h4:text-base
+                prose-p:text-[1.0625rem] prose-p:leading-[1.85] prose-p:mb-6 prose-p:font-sans
+                prose-a:text-accent prose-a:no-underline prose-a:border-b prose-a:border-accent/30
+                hover:prose-a:border-accent prose-a:transition-colors
+                prose-blockquote:border-l-accent/30 prose-blockquote:italic prose-blockquote:opacity-80 prose-blockquote:font-sans
+                prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-accent dark:prose-code:text-accent
+                prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
+                prose-pre:bg-transparent dark:prose-pre:bg-transparent prose-pre:border prose-pre:border-ink/10 dark:prose-pre:border-moon/10
+                prose-pre:rounded-sm prose-pre:p-4 prose-pre:font-mono
+                [&_pre_code]:p-0 [&_pre_code]:rounded-none
+                prose-img:rounded-sm
+                prose-li:font-sans
+                prose-table:border-collapse prose-th:text-left prose-th:py-2 prose-td:py-2 prose-th:font-sans prose-td:font-sans
+                prose-tr:border-b prose-tr:border-ink/10 dark:prose-tr:border-moon/10
+                dark:prose-invert">
+      <Content />
+    </div>
+
+    <section class="mt-12 border-t border-ink/10 dark:border-moon/10 pt-6 text-sm">
+      <p class="font-serif opacity-70">
+        本文采用
+        <a
+          href="https://creativecommons.org/licenses/by-nc/4.0/"
+          target="_blank"
+          rel="license noopener noreferrer"
+          class="text-accent hover:underline underline-offset-4"
+        >
+          CC BY-NC 4.0
+        </a>
+        许可协议，转载请注明出处并保持非商业用途。
+      </p>
+    </section>
+
+    <Footer class="mt-16" showHomeLink={true} />
+
+  </article>
+
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      // 初始化主题
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      // 添加点击事件
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+      }
+
+      // 移除代码块首行的空白
+      document.querySelectorAll('pre > code').forEach((codeBlock) => {
+        if (codeBlock.firstChild && codeBlock.firstChild.nodeType === Node.TEXT_NODE) {
+          const text = codeBlock.firstChild.textContent;
+          if (text && text.startsWith('\n')) {
+            codeBlock.firstChild.textContent = text.replace(/^\n/, '');
+          }
+        }
+      });
+    });
+  </script>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script is:inline>
+    (function() {
+      function tryRender() {
+        if (window.renderMathInElement) {
+          try {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+              ],
+              throwOnError: false
+            });
+            console.log('LaTeX rendered');
+          } catch (e) {
+            console.error('LaTeX render error:', e);
+          }
+        } else {
+          setTimeout(tryRender, 100);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', tryRender);
+      } else {
+        tryRender();
+      }
+    })();
+  </script>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js"></script>
+  <script is:inline>
+    (function() {
+      function applyPangu() {
+        if (window.pangu) {
+          try {
+            // 对文章内容区域应用 pangu 间距处理
+            const article = document.querySelector('article .prose');
+            if (article) {
+              pangu.spacingElementByClassName('prose');
+              console.log('Pangu spacing applied');
+            }
+          } catch (e) {
+            console.error('Pangu spacing error:', e);
+          }
+        } else {
+          setTimeout(applyPangu, 100);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyPangu);
+      } else {
+        applyPangu();
+      }
+    })();
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    pre {
+      white-space: pre;
+    }
+
+    pre code {
+      display: block;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    pre code::before,
+    pre code::after {
+      content: none;
+    }
+
+    .katex {
+      font-size: 1.1em;
+    }
+
+    .katex-display {
+      margin: 1.5rem 0;
+    }
+  </style>
+</body>
+</html>

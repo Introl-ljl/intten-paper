@@ -1,0 +1,262 @@
+---
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../config';
+import Footer from '../components/Footer.astro';
+import Moon from 'lucide-astro/Moon';
+import Sun from 'lucide-astro/Sun';
+
+const allPosts = (await getCollection('posts'))
+  .filter(post => !post.data.draft)
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+// 收集所有标签及其出现次数
+const tagCounts = new Map<string, number>();
+allPosts.forEach(post => {
+  if (post.data.tags) {
+    post.data.tags.forEach(tag => {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    });
+  }
+});
+
+// 按出现次数排序标签
+const sortedTags = Array.from(tagCounts.entries())
+  .sort((a, b) => b[1] - a[1]);
+
+// 按月份分组文章
+interface MonthGroup {
+  year: number;
+  month: number;
+  posts: typeof allPosts;
+}
+
+const monthGroups: MonthGroup[] = [];
+allPosts.forEach(post => {
+  const date = new Date(post.data.date);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+
+  let group = monthGroups.find(g => g.year === year && g.month === month);
+  if (!group) {
+    group = { year, month, posts: [] };
+    monthGroups.push(group);
+  }
+  group.posts.push(post);
+});
+
+// 计算标签字体大小
+function getTagSize(count: number, maxCount: number): string {
+  const minSize = 0.875; // text-sm
+  const maxSize = 1.5;   // text-2xl
+  const ratio = count / maxCount;
+  const size = minSize + (maxSize - minSize) * ratio;
+  return `${size}rem`;
+}
+
+const maxTagCount = sortedTags.length > 0 ? sortedTags[0][1] : 1;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={`归档 - ${siteConfig.title}`}>
+  <title>归档 - {siteConfig.title}</title>
+  <script is:inline>
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
+    <nav class="space-x-6 text-sm opacity-70 flex items-center">
+      {siteConfig.nav.map(item => (
+        <a href={item.href} class="hover:text-accent transition-colors hover:underline underline-offset-4">{item.name}</a>
+      ))}
+      <button id="theme-toggle" aria-label="切换主题" class="ml-4 p-2 rounded-full border border-ink/10 dark:border-moon/10 bg-paper dark:bg-night hover:bg-ink/5 dark:hover:bg-moon/5 transition-all opacity-70 hover:opacity-100">
+        <Moon class="w-4 h-4 block dark:hidden" />
+        <Sun class="w-4 h-4 hidden dark:block" />
+      </button>
+    </nav>
+  </header>
+
+  <div class="w-full max-w-4xl px-6 pb-12 md:pb-20 mx-auto">
+
+    <section class="mb-12">
+      <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4">归档</h1>
+      <p class="text-sm opacity-50">共 {allPosts.length} 篇文章</p>
+    </section>
+
+    <!-- 标签云 -->
+    {sortedTags.length > 0 && (
+      <section class="mb-12">
+        
+        <div class="flex flex-wrap gap-3 items-center">
+          {sortedTags.map(([tag, count]) => (
+            <button
+              data-tag={tag}
+              class="tag-filter font-serif text-accent hover:opacity-100 transition-all cursor-pointer opacity-70 hover:underline underline-offset-4"
+              style={`font-size: ${getTagSize(count, maxTagCount)}`}
+            >
+              {tag}
+              <span class="text-xs opacity-50 ml-1">({count})</span>
+            </button>
+          ))}
+        </div>
+        <button
+          id="clear-filter"
+          class="mt-4 text-sm opacity-50 hover:opacity-100 hover:text-accent transition-colors hidden"
+        >
+          清除筛选
+        </button>
+      </section>
+    )}
+
+    <!-- 时间线 -->
+    <section>
+
+      <div class="space-y-8">
+        {monthGroups.map(group => (
+          <div class="month-group">
+            <h3 class="text-lg font-serif font-semibold mb-4 opacity-70">
+              {group.year} 年 {group.month} 月
+            </h3>
+            <div class="space-y-4 pl-6 border-l-2 border-ink/10 dark:border-moon/10">
+              {group.posts.map(post => (
+                <article class="post-item group relative" data-tags={JSON.stringify(post.data.tags || [])}>
+                  <div class="absolute -left-[1.6rem] top-2 w-3 h-3 rounded-full bg-accent"></div>
+                  <a href={`/posts/${post.slug}`} class="block">
+                    <h4 class="text-lg font-serif font-semibold group-hover:text-accent transition-colors mb-2">
+                      {post.data.title}
+                    </h4>
+                    <time class="text-xs uppercase tracking-widest opacity-50 block mb-2">
+                      {post.data.date}
+                    </time>
+                    {post.data.tags && post.data.tags.length > 0 && (
+                      <div class="flex flex-wrap gap-1.5 mb-2">
+                        {post.data.tags.map(tag => (
+                          <span class="text-xs px-2 py-1 rounded bg-accent/10 text-accent">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <p class="text-sm opacity-70 leading-relaxed">
+                      {post.data.description}
+                    </p>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <Footer showHomeLink={true} />
+
+  </div>
+
+  <script>
+    // 主题切换
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      }
+
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+      }
+
+      // 标签筛选功能
+      const tagFilters = document.querySelectorAll('.tag-filter');
+      const postItems = document.querySelectorAll('.post-item');
+      const monthGroups = document.querySelectorAll('.month-group');
+      const clearFilter = document.getElementById('clear-filter');
+      let activeTag = null;
+
+      tagFilters.forEach(filter => {
+        filter.addEventListener('click', () => {
+          const tag = filter.getAttribute('data-tag');
+
+          if (activeTag === tag) {
+            // 取消筛选
+            activeTag = null;
+            clearFilter?.classList.add('hidden');
+            tagFilters.forEach(f => f.classList.remove('font-bold', 'opacity-100'));
+            postItems.forEach(item => item.classList.remove('hidden'));
+            monthGroups.forEach(group => group.classList.remove('hidden'));
+          } else {
+            // 应用筛选
+            activeTag = tag;
+            clearFilter?.classList.remove('hidden');
+
+            // 更新标签样式
+            tagFilters.forEach(f => {
+              if (f.getAttribute('data-tag') === tag) {
+                f.classList.add('font-bold', 'opacity-100');
+              } else {
+                f.classList.remove('font-bold', 'opacity-100');
+              }
+            });
+
+            // 筛选文章
+            postItems.forEach(item => {
+              const tagsJson = item.getAttribute('data-tags') || '[]';
+              try {
+                const tags = JSON.parse(tagsJson);
+                if (tags.includes(tag || '')) {
+                  item.classList.remove('hidden');
+                } else {
+                  item.classList.add('hidden');
+                }
+              } catch (e) {
+                item.classList.add('hidden');
+              }
+            });
+
+            // 隐藏空月份组
+            monthGroups.forEach(group => {
+              const visiblePosts = group.querySelectorAll('.post-item:not(.hidden)');
+              if (visiblePosts.length === 0) {
+                group.classList.add('hidden');
+              } else {
+                group.classList.remove('hidden');
+              }
+            });
+          }
+        });
+      });
+
+      // 清除筛选按钮
+      clearFilter?.addEventListener('click', () => {
+        activeTag = null;
+        clearFilter.classList.add('hidden');
+        tagFilters.forEach(f => f.classList.remove('font-bold', 'opacity-100'));
+        postItems.forEach(item => item.classList.remove('hidden'));
+        monthGroups.forEach(group => group.classList.remove('hidden'));
+      });
+    });
+  </script>
+
+  <style>
+    body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</body>
+</html>
