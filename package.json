@@ -16,6 +16,7 @@
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^9.0.2",
     "@tailwindcss/typography": "^0.5.19",
     "astro": "^5.16.6",
     "lucide-astro": "^0.556.0",
