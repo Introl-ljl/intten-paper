@@ -1,6 +1,6 @@
 export const prerender = false;
 
-const HITOKOTO_URL = 'http://hitokoto.introl.top:1234/';
+const HITOKOTO_URL = 'https://hitokoto.introl.top/';
 const REQUEST_TIMEOUT_MS = 2500;
 
 export async function GET() {
