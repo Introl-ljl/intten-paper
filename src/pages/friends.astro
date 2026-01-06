@@ -27,7 +27,11 @@ const rssUrl = `${siteUrl}/rss.xml`;
   <title>友链 - {siteConfig.title}</title>
   <script is:inline>
     // 立即执行，避免闪烁
-    const theme = localStorage.getItem('theme') || 'light';
+    const storedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = storedTheme === 'dark' || storedTheme === 'light'
+      ? storedTheme
+      : (systemPrefersDark ? 'dark' : 'light');
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     }
@@ -180,25 +184,46 @@ const rssUrl = `${siteUrl}/rss.xml`;
     document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.getElementById('theme-toggle');
       const html = document.documentElement;
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-      // 初始化主题
-      const theme = localStorage.getItem('theme') || 'light';
-      if (theme === 'dark') {
-        html.classList.add('dark');
+      const getStoredTheme = () => {
+        const stored = localStorage.getItem('theme');
+        return stored === 'dark' || stored === 'light' ? stored : null;
+      };
+
+      const applyTheme = (value) => {
+        html.classList.toggle('dark', value === 'dark');
+      };
+
+      const updateToggleState = () => {
+        if (!toggle) return;
+        const isDark = html.classList.contains('dark');
+        toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        toggle.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
+      };
+
+      const storedTheme = getStoredTheme();
+      applyTheme(storedTheme ?? (mediaQuery.matches ? 'dark' : 'light'));
+      updateToggleState();
+
+      const handleSystemChange = (event) => {
+        if (getStoredTheme()) return;
+        applyTheme(event.matches ? 'dark' : 'light');
+        updateToggleState();
+      };
+
+      if (typeof mediaQuery.addEventListener === 'function') {
+        mediaQuery.addEventListener('change', handleSystemChange);
+      } else if (typeof mediaQuery.addListener === 'function') {
+        mediaQuery.addListener(handleSystemChange);
       }
 
       // 添加点击事件
       if (toggle) {
-        // 设置初始状态
-        const isDarkInitial = theme === 'dark';
-        toggle.setAttribute('aria-pressed', isDarkInitial ? 'true' : 'false');
-        toggle.setAttribute('aria-label', isDarkInitial ? '切换到浅色模式' : '切换到深色模式');
-
         toggle.addEventListener('click', () => {
           const isDark = html.classList.toggle('dark');
           localStorage.setItem('theme', isDark ? 'dark' : 'light');
-          toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-          toggle.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
+          updateToggleState();
         });
       }
 
