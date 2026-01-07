@@ -4,6 +4,11 @@
       "source": "/_astro/avatar.:hash.webp",
       "destination": "/avatar.jpg",
       "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/",
+      "permanent": true
     }
   ]
 }
