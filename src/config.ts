@@ -20,13 +20,16 @@ export const siteConfig = {
   // 社交链接
   social: [
     { name: "Email", href: "mailto:introl@foxmail.com", icon: "mail", label: "introl@foxmail.com" },
-    { name: "GitHub", href: "https://github.com/Introl-ljl", icon: "github" ,label: "Github" },
+    { name: "GitHub", href: "https://github.com/Introl-ljl", icon: "github", label: "Github" },
     { name: "Codeforces", href: "https://codeforces.com/profile/introl", icon: "codeforces", label: "Codeforces" },
     // { name: "WeChat", href: "#", icon: "wechat", label: "微信: Introl-ljl" },
     // { name: "QQ", href: "#", icon: "qq", label: "QQ: 3226749226" },
-    { name: "RSS", href: "/rss.xml", icon: "rss" ,label: "RSS" },
+    { name: "RSS", href: "/rss.xml", icon: "rss", label: "RSS" },
     // { name: "Linux.Do", href: "https://linux.do/u/introl/", icon: "linuxdo", label: "LINUX DO" },
   ],
+
+  // 网站配置
+  startTime: "2023-05-21", // 建站时间，格式：YYYY-MM-DD
 
   // 版权信息
   copyright: "2026",

@@ -1,5 +1,5 @@
 ---
-import { getEntry } from 'astro:content';
+import { getEntry, getCollection } from 'astro:content';
 import { siteConfig } from '../config';
 import Footer from '../components/Footer.astro';
 import Moon from 'lucide-astro/Moon';
@@ -10,6 +10,18 @@ if (!aboutEntry) {
   throw new Error('Could not find about page content at src/content/pages/about.md');
 }
 const { Content } = await aboutEntry.render();
+
+// 获取博客统计数据
+const allPosts = await getCollection('posts');
+const posts = allPosts.filter(post => !post.data.draft);
+
+const postCount = posts.length;
+const wordCount = posts.reduce((acc, post) => acc + (post.body?.length || 0), 0);
+// const wordCountStr = (wordCount / 10000).toFixed(1) + 'w';
+
+const startDate = new Date(siteConfig.startTime);
+const today = new Date();
+const runningDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 ---
 
 <!DOCTYPE html>
@@ -55,6 +67,10 @@ const { Content } = await aboutEntry.render();
     </section>
 
     <main>
+      <div class="mb-12 py-6 border-b border-ink/10 dark:border-moon/10 font-serif text-lg leading-relaxed">
+        本站已经稳定运行 <span class="text-accent underline font-semibold">{runningDays}</span> 天，共有 <span class="text-accent underline font-semibold">{postCount}</span> 篇博客，总字数已经达到了 <span class="text-accent underline font-semibold">{wordCount}</span>。
+      </div>
+
       <div class="prose prose-lg max-w-none
                   prose-h2:text-2xl prose-h2:font-serif prose-h2:font-semibold prose-h2:mb-6 prose-h2:text-accent
                   prose-h3:text-xl prose-h3:font-serif prose-h3:font-semibold prose-h3:text-accent
