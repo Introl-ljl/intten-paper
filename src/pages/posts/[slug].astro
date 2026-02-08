@@ -34,13 +34,23 @@ const { Content } = await post.render();
       document.documentElement.classList.add('dark');
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <script defer src="http://home.introl.top:3000/script.js" data-website-id="a6b387d0-5202-4a25-b28c-b4d24b78e8fd"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="/fonts/fonts.css" as="style">
+  <link rel="preload" href="/libs/katex/katex.min.css" as="style">
+  <link rel="dns-prefetch" href="https://home.introl.top">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/libs/katex/katex.min.css">
 </head>
 <body class="bg-paper text-ink dark:bg-night dark:text-moon antialiased min-h-screen selection:bg-accent selection:text-white font-sans">
+
+  <!-- Error Message Container -->
+  <div id="latex-error" class="hidden fixed top-4 right-4 z-50 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow-lg rounded" role="alert">
+      <p class="font-bold">渲染错误</p>
+      <p>数学公式渲染失败，<button onclick="window.location.reload()" class="underline hover:text-red-800">刷新页面</button> 重试。</p>
+  </div>
 
   <header class="w-full max-w-4xl mx-auto px-6 py-6 flex justify-end items-center">
     <nav class="space-x-6 text-sm opacity-70 flex items-center">
@@ -101,9 +111,16 @@ const { Content } = await post.render();
 
   </article>
 
+  <!-- External Scripts (Deferred) -->
+  <script defer src="/libs/katex/katex.min.js"></script>
+  <script defer src="/libs/katex/auto-render.min.js"></script>
+  <script defer src="/libs/pangu/pangu.min.js"></script>
+  <script async src="https://home.introl.top:3000/script.js" data-website-id="a6b387d0-5202-4a25-b28c-b4d24b78e8fd"></script>
+
   <script>
-    // 等待DOM加载完成
+    // Logic Script
     document.addEventListener('DOMContentLoaded', () => {
+      // Theme Toggle Logic
       const toggle = document.getElementById('theme-toggle');
       const html = document.documentElement;
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -131,7 +148,6 @@ const { Content } = await post.render();
         mediaQuery.addListener(handleSystemChange);
       }
 
-      // 添加点击事件
       if (toggle) {
         toggle.addEventListener('click', () => {
           const isDark = html.classList.toggle('dark');
@@ -139,7 +155,7 @@ const { Content } = await post.render();
         });
       }
 
-      // 移除代码块首行的空白
+      // Code block cleanup
       document.querySelectorAll('pre > code').forEach((codeBlock) => {
         if (codeBlock.firstChild && codeBlock.firstChild.nodeType === Node.TEXT_NODE) {
           const text = codeBlock.firstChild.textContent;
@@ -148,68 +164,82 @@ const { Content } = await post.render();
           }
         }
       });
-    });
-  </script>
 
-  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script is:inline src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script is:inline>
-    (function() {
-      function tryRender() {
-        if (window.renderMathInElement) {
-          try {
-            renderMathInElement(document.body, {
+      // --- Performance & Optimization Logic ---
+
+      const waitForScript = (globalVar, timeout = 5000) => {
+        return new Promise((resolve, reject) => {
+          if (window[globalVar]) return resolve();
+          const start = Date.now();
+          const interval = setInterval(() => {
+            if (window[globalVar]) {
+              clearInterval(interval);
+              resolve();
+            } else if (Date.now() - start > timeout) {
+              clearInterval(interval);
+              reject(new Error(`Timeout waiting for ${globalVar}`));
+            }
+          }, 50);
+        });
+      };
+
+      const renderLaTeX = async () => {
+        try {
+          await Promise.all([
+            waitForScript('katex'),
+            waitForScript('renderMathInElement')
+          ]);
+          
+          const prose = document.querySelector('.prose');
+          if (prose && window.renderMathInElement) {
+            window.renderMathInElement(prose, {
               delimiters: [
                 {left: "$$", right: "$$", display: true},
                 {left: "$", right: "$", display: false},
                 {left: "\\(", right: "\\)", display: false},
                 {left: "\\[", right: "\\]", display: true}
               ],
-              throwOnError: false
+              throwOnError: false,
+              strict: false
             });
-            console.log('LaTeX rendered');
-          } catch (e) {
-            console.error('LaTeX render error:', e);
+            console.log('LaTeX rendered successfully');
           }
-        } else {
-          setTimeout(tryRender, 100);
+        } catch (e) {
+          console.error('LaTeX render error:', e);
+          const errorDiv = document.getElementById('latex-error');
+          if (errorDiv) errorDiv.classList.remove('hidden');
         }
-      }
+      };
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', tryRender);
-      } else {
-        tryRender();
-      }
-    })();
-  </script>
-
-  <script is:inline src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js"></script>
-  <script is:inline>
-    (function() {
-      function applyPangu() {
-        if (window.pangu) {
-          try {
-            // 对文章内容区域应用 pangu 间距处理
-            const article = document.querySelector('article .prose');
-            if (article) {
-              pangu.spacingElementByClassName('prose');
-              console.log('Pangu spacing applied');
+      const applyPangu = async () => {
+        try {
+          await waitForScript('pangu');
+          const prose = document.querySelector('.prose');
+          if (prose && window.pangu) {
+            if (typeof window.pangu.spacingNode === 'function') {
+              window.pangu.spacingNode(prose);
+            } else if (typeof window.pangu.spacingElementByClassName === 'function') {
+              window.pangu.spacingElementByClassName('prose');
             }
-          } catch (e) {
-            console.error('Pangu spacing error:', e);
+            console.log('Pangu spacing applied');
           }
-        } else {
-          setTimeout(applyPangu, 100);
+        } catch (e) {
+          console.error('Pangu error:', e);
         }
-      }
+      };
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', applyPangu);
-      } else {
+      // Execute optimizations
+      const initOptimizations = () => {
+        renderLaTeX();
         applyPangu();
+      };
+
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initOptimizations);
+      } else {
+        setTimeout(initOptimizations, 100);
       }
-    })();
+    });
   </script>
 
   <style>

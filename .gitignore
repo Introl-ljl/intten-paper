@@ -7,3 +7,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .vercel/
+.ace-tool/
+
+# Ignore editor project
+apps/editor/
