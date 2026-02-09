@@ -136,7 +136,7 @@ const maxTagCount = sortedTags.length > 0 ? sortedTags[0][1] : 1;
             <div class="space-y-4 pl-6 border-l-2 border-ink/10 dark:border-moon/10">
               {group.posts.map(post => (
                 <article class="post-item group relative" data-tags={JSON.stringify(post.data.tags || [])}>
-                  <div class="absolute -left-[1.6rem] top-2 w-3 h-3 rounded-full bg-accent"></div>
+                  <div class="absolute -left-[1.85rem] top-[0.55rem] w-3 h-3 rounded-full bg-accent"></div>
                   <a href={`/posts/${post.slug}`} class="block">
                     <h4 class="text-lg font-serif font-semibold group-hover:text-accent transition-colors mb-2">
                       {post.data.title}
