@@ -11,3 +11,4 @@ pnpm-debug.log*
 
 # Ignore editor project
 apps/editor/
+.claude/
