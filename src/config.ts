@@ -60,6 +60,12 @@ export const siteConfig = {
       avatar: "https://p.maxqi.top/img/2025/10/01/68dce7326320a.png",
       description: "一名高中生的技术与成长记录"
     },
+    {
+      name: "橘智的安宁之地",
+      url: "https://juzhiart.com",
+      avatar: "https://dataer-1257252871.cos.ap-shanghai.myqcloud.com/virtualUserIcon/logo.png",
+      description: "共享博客&深度思考。祝好，愿喧嚣中保持安宁。"
+    },
   ],
 
   // 主题配置
