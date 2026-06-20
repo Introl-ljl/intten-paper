@@ -1,5 +1,12 @@
 export const PAGE_SIZE = 10;
 
+// 导航项：叶子节点用 href；聚合入口用 children 渲染为下拉菜单。
+export interface NavItem {
+  name: string;
+  href?: string;
+  children?: NavItem[];
+}
+
 export const siteConfig = {
   // 网站基本信息
   title: "Introl's Blog",
@@ -15,7 +22,14 @@ export const siteConfig = {
     { name: "随笔", href: "/thoughts" },
     { name: "友链", href: "/friends" },
     { name: "关于", href: "/about" },
-  ],
+    {
+      name: "More",
+      children: [
+        { name: "Games", href: "/more/games" },
+        // 未来可在此继续扩展子页面
+      ],
+    },
+  ] as NavItem[],
 
   // 社交链接
   social: [
@@ -64,7 +78,7 @@ export const siteConfig = {
       name: "橘智的安宁之地",
       url: "https://juzhiart.com",
       avatar: "https://dataer-1257252871.cos.ap-shanghai.myqcloud.com/virtualUserIcon/logo.png",
-      description: "共享博客&深度思考。祝好，愿喧嚣中保持安宁。"
+      description: "共享博客&深度思考。"
     },
   ],
 
